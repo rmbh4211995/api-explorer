@@ -1,8 +1,9 @@
 version: '3'
 services:
   web:
-    image: rmbh4211995/api-explorer:dev
-    build: .
+    image: api-explorer
+    build:
+      context: .
     ports:
       - '4000:4000'
     volumes:
