@@ -23,4 +23,4 @@ jobs:
       - name: List Context
         run: docker context ls
       - name: Up
-        run: docker-compose -f docker-compose.prod.yml --context api-explorer up --build -d
+        run: docker-compose -f docker-compose.prod.yml --context api-explorer up -d
