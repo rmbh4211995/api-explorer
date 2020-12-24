@@ -20,7 +20,5 @@ jobs:
           known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
       - name: Context
         run: docker context create --docker host=ssh://${{ secrets.AWS_USER }}@${{ secrets.AWS_IP }} api-explorer
-      - name: Down
-        run: sudo ./prod down
       - name: Up
-        run: sudo ./prod up --build -d
+        run: docker-compose -f docker-compose.prod.yml up -d
