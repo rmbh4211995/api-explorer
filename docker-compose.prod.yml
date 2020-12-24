@@ -2,6 +2,7 @@ version: '3'
 services:
   web:
     image: api-explorer
-    build: .
+    build:
+      context: ./
     ports:
-      - '4000:4000'
+      - '80:80'
