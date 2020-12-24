@@ -21,6 +21,6 @@ jobs:
       - name: Context
         run: docker context create --docker host=ssh://${{ secrets.AWS_USER }}@${{ secrets.AWS_IP }} api-explorer
       - name: Down
-        run: ./prod down
+        run: sudo ./prod down
       - name: Up
-        run: ./prod up --build -d
+        run: sudo ./prod up --build -d
