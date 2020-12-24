@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Npm install
-        run: npm ci
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -23,6 +21,6 @@ jobs:
       - name: List Local Context
         run: docker context ls
       - name: List Remote Context
-        run: docker --v && docker ‐‐context api-explorer ps
+        run: docker -v && docker ‐‐context api-explorer ps
       - name: Docker Compose
         run: docker-compose -f docker-compose.prod.yml --verbose --context api-explorer up -d
