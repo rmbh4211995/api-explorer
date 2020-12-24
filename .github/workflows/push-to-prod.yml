@@ -19,7 +19,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
       - name: Create Context
-        run: docker context create DOCKER_HOST=ssh://ubuntu@ec2-18-207-128-14.compute-1.amazonaws.com api-explorer --default-stack-orchestrator swarm
+        run: docker context create api-explorer --docker "host=ssh://ubuntu@ec2-18-207-128-14.compute-1.amazonaws.com"
       - name: List Context
         run: docker context ls
       - name: Docker Compose
