@@ -34,7 +34,7 @@ const Table: React.FunctionComponent<TableProps> = React.memo(
       setSelectedTab(e.currentTarget.name)
     }
 
-    console.log('Table rendered --PROD!')
+    console.log('Table rendered debugging build!')
 
     return (
       <>
