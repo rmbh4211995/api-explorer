@@ -1,0 +1,25 @@
+name: Push to Production
+
+on:
+  push:
+    branches: [production]
+
+jobs:
+  push-to-production:
+    name: Push to Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Npm install
+        run: npm ci
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.AWS_SSH_KEY }}
+          known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
+      - name: Create context
+        run: docker context create --docker host=ssh://${{ secrets.AWS_USER }}@${{ secrets.AWS_IP }} api-explorer
+      - name: Down and up
+        run: docker-compose -f docker-compose.prod.yml --context api-explorer down
+        run: docker-compose -f docker-compose.prod.yml --context api-explorer up --build -d
