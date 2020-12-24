@@ -19,7 +19,7 @@ npm run start
 
 or with docker-compose for local dev
 ```
-npm run docker-run-dev
+npm run up
 ```
 
 ## Deployment
