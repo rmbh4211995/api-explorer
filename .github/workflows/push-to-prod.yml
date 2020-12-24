@@ -23,6 +23,6 @@ jobs:
       - name: List Local Context
         run: docker context ls
       - name: List Remote Context
-        run: docker ‐‐context api-explorer ps
+        run: docker --v && docker ‐‐context api-explorer ps
       - name: Docker Compose
         run: docker-compose -f docker-compose.prod.yml --verbose --context api-explorer up -d
