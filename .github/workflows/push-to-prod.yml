@@ -20,5 +20,7 @@ jobs:
         run: docker context create --docker host=ssh://ubuntu@ec2-18-207-128-14.compute-1.amazonaws.com api-explorer --default-stack-orchestrator swarm
       - name: List Context
         run: docker context ls
+      - name: Use Context
+        run: docker context use api-explorer
       - name: Up
-        run: docker-compose -f docker-compose.prod.yml --verbose --context api-explorer up --build -d
+        run: docker-compose -f docker-compose.prod.yml --verbose up --build -d
