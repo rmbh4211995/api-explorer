@@ -1,7 +1,6 @@
 version: '3'
 services:
   web:
-    image: api-explorer
     build:
       context: ./
     ports:
