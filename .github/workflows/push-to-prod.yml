@@ -17,7 +17,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
       - name: Context
-        run: docker context create api-explorer
+        run: docker context create --docker host=ssh://ubuntu@ec2-18-207-128-14.compute-1.amazonaws.com api-explorer
       - name: List Context
         run: docker context ls
       - name: Up
