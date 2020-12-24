@@ -11,15 +11,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Npm install
-        run: npm ci
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.AWS_SSH_KEY }}
           known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
       - name: Context
-        run: docker context create --docker host=ssh://${{ secrets.AWS_USER }}@${{ secrets.AWS_IP }} api-explorer
+        run: docker context create api-explorer
       - name: List Context
         run: docker context ls
       - name: Up
