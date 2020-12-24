@@ -1,230 +1,159 @@
 import React, { useEffect, useState } from 'react'
+import { DOCS, APIS, Endpoint, createUrl } from '../lib/api'
 import JsonViewer from '../components/JsonViewer'
+import classNames from 'classnames'
+import highlight from 'highlight.js'
+import Table from '../components/Table'
+import ColorTag from '../components/ColorTag'
 
 interface HomepageProps {
   name: string
   depth: number
 }
 
-interface Endpoint {
-  base: string
-  part?: string
-}
-interface ApisType {
-  [key: string]: {
-    [key: string]: Endpoint
-  }
-}
-
-const baseUrls = {
-  gibli: 'https://ghibliapi.herokuapp.com',
-  digimon: 'https://digimon-api.vercel.app',
-  pokemon: 'https://pokeapi.co/api/v2',
-  publicApis: 'https://api.publicapis.org',
-  openBreweries: 'https://api.openbrewerydb.org',
-  jikan: 'https://api.jikan.moe/v3',
-}
-
-const Docs: { [key: string]: string } = {
-  'studio gibli': 'https://ghibliapi.herokuapp.com/#',
-  digimon: 'https://digimon-api.herokuapp.com/',
-  pokemon: 'https://pokeapi.co/',
-  'kanye rest': 'https://kanye.rest/',
-  'public apis': 'https://github.com/davemachado/public-api',
-  jikan: 'https://jikan.docs.apiary.io/#',
-}
-
-const Apis: ApisType = {
-  'studio gibli': {
-    films: { base: `${baseUrls.gibli}/films` },
-    film: {
-      base: `${baseUrls.gibli}/films/`,
-      part: '2baf70d1-42bb-4437-b551-e5fed5a87abe',
-    },
-    people: { base: `${baseUrls.gibli}/people` },
-    person: {
-      base: `${baseUrls.gibli}/people/`,
-      part: 'fe93adf2-2f3a-4ec4-9f68-5422f1b87c01',
-    },
-    locations: { base: `${baseUrls.gibli}/locations` },
-    location: {
-      base: `${baseUrls.gibli}/locations/`,
-      part: '11014596-71b0-4b3e-b8c0-1c4b15f28b9a',
-    },
-    species: { base: `${baseUrls.gibli}/species` },
-    specie: {
-      base: `${baseUrls.gibli}/species/`,
-      part: 'af3910a6-429f-4c74-9ad5-dfe1c4aa04f2',
-    },
-    vehicles: { base: `${baseUrls.gibli}/vehicles` },
-    vehicle: {
-      base: `${baseUrls.gibli}/vehicles/`,
-      part: '4e09b023-f650-4747-9ab9-eacf14540cfb',
-    },
-  },
-  digimon: {
-    digimon: { base: `${baseUrls.digimon}/api/digimon` },
-    digimonByName: {
-      base: `${baseUrls.digimon}/api/digimon/name/`,
-      part: 'agumon',
-    },
-    digimonByLevel: {
-      base: `${baseUrls.digimon}/api/digimon/level/`,
-      part: 'rookie',
-    },
-  },
-  pokemon: {
-    pokemon: { base: `${baseUrls.pokemon}/pokemon` },
-    evolutions: { base: `${baseUrls.pokemon}/evolution-chain` },
-    moves: { base: `${baseUrls.pokemon}/move` },
-    locations: { base: `${baseUrls.pokemon}/location` },
-    items: { base: `${baseUrls.pokemon}/item` },
-    machines: { base: `${baseUrls.pokemon}/machine` },
-    berries: { base: `${baseUrls.pokemon}/berry` },
-  },
-  'kanye rest': {
-    quote: { base: 'https://api.kanye.rest' },
-  },
-  'public apis': {
-    entries: { base: `${baseUrls.publicApis}/entries` },
-    random: { base: `${baseUrls.publicApis}/random` },
-    categories: { base: `${baseUrls.publicApis}/categories` },
-    health: { base: `${baseUrls.publicApis}/health` },
-  },
-  jikan: {
-    anime: { base: `${baseUrls.jikan}/search/anime?q=&order_by=id&sort=asc&page=1` },
-    manga: { base: `${baseUrls.jikan}/search/manga?q=&order_by=id&sort=asc&page=1` },
-    'action anime': { base: `${baseUrls.jikan}/anime/1` },
-    'action manga': { base: `${baseUrls.jikan}/manga/1` },
-  },
+export interface InputType {
+  [key: string]: string
 }
 
 const Homepage = (props: HomepageProps) => {
   const [api, setApi] = useState<string>('studio gibli')
   const [json, setJson] = useState<object>()
-  const [endpoint, setEndpoint] = useState<Endpoint>({
-    base: '',
+  const [endpoint, setEndpoint] = useState<Endpoint>({ url: '', params: [] })
+  const [inputs, setInputs] = useState<InputType>({
+    input1: '',
+    input2: '',
   })
-  const [disabled, setDisabled] = useState<boolean>(true)
-  const [input, setInput] = useState<string>('')
+  const [error, setError] = useState<boolean | null>(null)
+  const [params, setParams] = useState<string[]>([])
+
+  const isDefaultInput = Object.values(inputs).every((val) => val === '')
 
   useEffect(() => {
-    const getData = async () => {
-      const url = part ? `${base}${part}` : base
-      const requestJson = await (await fetch(url)).json()
+    const { url, params = [] } = Object.values(APIS[api])[0]
 
-      setJson(requestJson)
-    }
-
-    const { base, part } = endpoint
-
-    if (input !== '') setInput('')
-    if (base !== '') getData()
-  }, [endpoint])
-
-  useEffect(() => {
-    const { base, part } = Object.values(Apis[api])[0]
-
-    setDisabled(!part)
-    setEndpoint({ base, part })
+    onEndpointChange(url, params)
   }, [api])
 
-  const onSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { part, base } = JSON.parse(e.target.value)
+  const onEndpointChange = async (url: string, params: string[]) => {
+    setEndpoint({ url, params })
 
-    setDisabled(!part)
-    setEndpoint({ base, part })
+    if (url.length > 0) {
+      const { url: newUrl, matches } = createUrl(api, url, isDefaultInput ? params : [...Object.values(inputs)])
+      const requestJson = await (await fetch(newUrl)).json()
+
+      setParams(matches)
+      setJson(requestJson)
+      setError(null)
+    }
+
+    if (Object.values(inputs).some((val) => val.length > 0)) {
+      setInputs({ input1: '', input2: '' })
+    }
+  }
+
+  const onEndpointSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { params = [], url } = JSON.parse(e.target.value)
+
+    onEndpointChange(url, params)
   }
 
   const onApiSelect = (e: React.ChangeEvent<HTMLSelectElement>) => setApi(e.target.value)
 
   const onClick = async () => {
-    const { base, part } = endpoint
-    const url = input === '' ? `${base}${part}` : `${base}${input}`
+    const { url, matches } = createUrl(api, endpoint.url, isDefaultInput ? endpoint.params : [...Object.values(inputs)])
     const response = await fetch(url)
-    console.log(response)
+
+    setParams(matches)
 
     if (response.status === 200) {
       // success
       const json = await response.json()
       setJson(json)
+      setError(false)
     } else {
       // error
       const { status, statusText, url } = response
       const headers: string[] = []
       response.headers.forEach((header) => headers.push(header))
 
-      setJson({ status, statusText, url, body: response.text(), headers })
+      setJson({ errorCode: status, error: statusText, url, body: response.text(), headers })
+      setError(true)
     }
   }
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)
+  const onInputChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    setInputs((prevState) => ({ ...prevState, [key]: value }))
+  }
+
+  // console.log('rerender', { api, endpoint, inputs, error })
 
   return (
     <>
-      <div className='flex justify-center items-center bg-gray-800 text-white py-2'>
-        <p className='bg-red-400 py px-2 rounded-sm mr-2'>Api</p>
-        <span className='text-lg mr-2 capitalize'>{api}</span>
-      </div>
-      <div className='flex justify-center items-center bg-blue-400 text-white py-4'>
-        <p className='bg-blue-800 py px-2 rounded-sm mr-2'>Official Docs</p>
-        <a className='underline text-blue-800 hover:text-blue-600' href={Docs[api]} target='_blank'>
-          {Docs[api]}
-        </a>
-      </div>
-      <div className='py-4 bg-gray-800'>
-        <div className='w-max mx-auto'>
-          <div className='text-white my-4'>
-            {endpoint.base}
-            {input !== '' ? input : endpoint.part}
-          </div>
-          <div className='flex flex-col items-center md:flex-row'>
-            <button
-              disabled={disabled}
-              onClick={onClick}
-              className='capitalize bg-green-900 text-white py px-4 rounded-sm mr-2 h-6 mb-4 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-400'
-            >
-              Get
-            </button>
-            <select
-              className='capitalize border border-gray-900 mr-2 h-6 mb-4'
-              name='api'
-              id='api'
-              value={api}
-              onChange={onApiSelect}
-            >
-              {Object.keys(Apis).map((key) => {
-                return (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                )
-              })}
-            </select>
-            <select
-              className='capitalize border border-gray-900 mr-2 h-6 mb-4'
-              name='endpoints'
-              id='endpoints'
-              onChange={onSelect}
-            >
-              {Object.entries(Apis[api]).map(([key, value]) => {
-                const { part, base } = value
-                const json = JSON.stringify({ ...(part && { part }), base })
-
-                return (
-                  <option key={json} value={json}>
-                    {key}
-                  </option>
-                )
-              })}
-            </select>
-            {!disabled && (
-              <input className='text-gray-700 h-6 mb-4' value={input} onChange={onChange} placeholder={endpoint.part} />
-            )}
-          </div>
+      <div className='w-full bg-gray-900 text-white pt-7'>
+        <div className='flex flex-col w-3/5 mx-auto'>
+          <p className='text-sm text-blue-400'>Designed for developers</p>
+          <p className='text-xl'>A compilation of some free internet treasures</p>
+          <p className='text-sm text-gray-400'>
+            Take a quick look at the available endpoints with the explorer below and start experimenting
+          </p>
         </div>
       </div>
-      <JsonViewer json={json} />
+      <div className='w-full bg-gray-900 pt-7'>
+        <div className='w-3/5 mx-auto'>
+          <div className='grid grid-rows-3 sm:grid-cols-3 sm:grid-rows-1'>
+            <div className='pr-5 mb-2'>
+              <p className='text-sm text-white'>Free Resources</p>
+              <p className='text-sm text-gray-400'>Cycle through a collection of apis and supported endpoints</p>
+            </div>
+            <div className='pr-5 mb-2'>
+              <p className='text-sm text-white'>Testing Utility</p>
+              <p className='text-sm text-gray-400'>Use the interactive api console to create custom requests.</p>
+            </div>
+            <div className='pr-5 mb-2'>
+              <p className='text-sm text-white'>Identify Properties</p>
+              <p className='text-sm text-gray-400'>Examine valuable metadata and paginate through results.</p>
+            </div>
+          </div>
+        </div>
+        <div className='w-3/5 mx-auto pt-7'>
+          <ColorTag type='href' content={DOCS[api]} />
+          <ColorTag
+            type='p'
+            content={createUrl(api, endpoint.url, isDefaultInput ? endpoint.params : [...Object.values(inputs)]).url}
+          />
+          <Table
+            api={api}
+            onApiSelect={onApiSelect}
+            onEndpointSelect={onEndpointSelect}
+            onInputChange={onInputChange}
+            inputs={inputs}
+            endpoint={endpoint}
+            params={params}
+            codeContent={
+              createUrl(api, endpoint.url, isDefaultInput ? endpoint.params : [...Object.values(inputs)]).url
+            }
+          />
+        </div>
+        <div className='flex w-3/5 mx-auto mt-4'>
+          <button
+            disabled={params.length === 0}
+            onClick={onClick}
+            className={classNames(
+              'shadow-md capitalize bg-green-500 text-white py-1 px-7 rounded-sm mr-2 mb-4',
+              'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-300 disabled:shadow-none',
+              'hover:bg-green-600'
+            )}
+          >
+            Request
+          </button>
+        </div>
+      </div>
+      <div className='w-full py-4 bg-gray-900 pt-3'>
+        <div className='w-3/5 mx-auto'>
+          <JsonViewer json={json} error={error} />
+        </div>
+      </div>
     </>
   )
 }

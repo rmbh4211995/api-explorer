@@ -1,0 +1,7 @@
+version: '3'
+services:
+  web:
+    image: rmbh4211995/api-explorer:prod
+    build: .
+    ports:
+      - '80:4000'

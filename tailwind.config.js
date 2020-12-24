@@ -6,6 +6,15 @@ module.exports = {
       height: {
         screen: '100vh',
       },
+      minHeight: {
+        24: '6rem',
+      },
+      minWidth: {
+        44: '11rem',
+      },
+      gridTemplateColumns: {
+        '1/9': '1fr 9fr',
+      },
     },
   },
   variants: {
@@ -13,6 +22,7 @@ module.exports = {
       opacity: ['disabled'],
       cursor: ['disabled'],
       backgroundColor: ['disabled'],
+      boxShadow: ['disabled'],
     },
   },
   plugins: [],
