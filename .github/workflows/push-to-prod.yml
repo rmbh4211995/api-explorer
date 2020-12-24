@@ -15,7 +15,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.AWS_SSH_KEY }}
-          known_hosts: ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKXrylrwshr3HZpA1lCVlYnK81EtmkU3f1ib9d9nz02CyXv4IxLomAvWiA1OAucE6wzsFeHn/J8ykZov+3BdJfg=
+          known_hosts: ${{ secrets.AWS_KNOWN_HOSTS }}
       - name: Context
         run: docker context create --docker host=ssh://ubuntu@ec2-18-207-128-14.compute-1.amazonaws.com api-explorer
       - name: List Context
